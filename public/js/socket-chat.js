@@ -2,7 +2,7 @@ var socket = io()
 var params = new URLSearchParams(window.location.search)
 if (!params.has('nombre') || !params.has('sala')) {
     window.location = 'index.html'
-    throw new Error('El nombre y la sala son obligatorios.')
+    throw new Error('El nombre y sala son necesarios')
 }
 var usuario = {
     nombre: params.get('nombre'),
@@ -10,11 +10,12 @@ var usuario = {
 }
 socket.on('connect', () => {
     console.log('Conexión establecida.')
-    socket.emit('entrarChat', usuario, (resp) => {
-        console.log('Usuarios conectados', resp)
-    })
+    socket.emit('entrarChat', usuario, (resp) => renderizarUsuarios(resp))
 })
 socket.on('disconnect', () => console.log('Conexión perdida.'))
-socket.on('crearMensaje', (mensaje) => console.log('Servidor:', mensaje))
-socket.on('listaPersonas', (personas) => console.log(personas))
-socket.on('mensajePrivado', (mensaje) => console.log(mensaje))
+socket.on('crearMensaje', (msg) => {
+    renderizarMensajes(msg, false)
+    scrollBottom()
+})
+socket.on('listaPersona', (personas) => renderizarUsuarios(personas))
+socket.on('mensajePrivado', (msg) => console.log('Mensaje Privado:', msg))

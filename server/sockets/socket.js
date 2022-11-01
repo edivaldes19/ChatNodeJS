@@ -13,14 +13,17 @@ io.on('connection', (client) => {
         }
         client.join(sala)
         usuarios.agregarPersona(client.id, nombre, sala)
-        client.broadcast.to(data.sala).emit('listaPersonas', usuarios.getPersonasPorSala(sala))
+        client.broadcast.to(sala).emit('listaPersonas', usuarios.getPersonasPorSala(sala))
+        client.broadcast.to(sala).emit('crearMensaje', crearMensaje('Administrador', `${nombre} se ha salido del Chat.`))
         callback(usuarios.getPersonasPorSala(sala))
     })
-    client.on('crearMensaje', (data) => {
+    client.on('crearMensaje', (data, callback) => {
         const persona = usuarios.getPersona(client.id)
+        const { nombre, sala } = persona
         const { mensaje } = data
-        const mensajeAEnviar = crearMensaje(persona.nombre, mensaje)
-        client.broadcast.to(persona.sala).emit('crearMensaje', mensajeAEnviar)
+        const mensajeAEnviar = crearMensaje(nombre, mensaje)
+        client.broadcast.to(sala).emit('crearMensaje', mensajeAEnviar)
+        callback(mensaje)
     })
     client.on('disconnect', () => {
         const personaEliminada = usuarios.borrarPersona(client.id)
